@@ -35,6 +35,8 @@ type callResult struct {
 	status    string
 	duration  time.Duration
 	timestamp time.Time
+	workerId  string
+	response  []byte
 }
 
 // Requester is used for doing the requests

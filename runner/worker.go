@@ -175,7 +175,8 @@ func (w *Worker) makeUnaryRequest(ctx *context.Context, reqMD *metadata.MD, inpu
 		callOptions = append(callOptions, grpc.UseCompressor(gzip.Name))
 	}
 
-	res, resErr = w.stub.InvokeRpc(*ctx, w.mtd, input, callOptions...)
+	// Add workerID to context
+	res, resErr = w.stub.InvokeRpc(context.WithValue(*ctx, "ghzWorker", w.workerID), w.mtd, input, callOptions...)
 
 	if w.config.hasLog {
 		inputData, _ := input.MarshalJSON()

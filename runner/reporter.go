@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"sort"
 	"time"
@@ -136,6 +137,8 @@ type ResultDetail struct {
 	Latency   time.Duration `json:"latency"`
 	Error     string        `json:"error"`
 	Status    string        `json:"status"`
+	Worker    string        `json:"worker"`
+	Response  string        `json:"response"`
 }
 
 func newReporter(results chan *callResult, c *RunConfig) *Reporter {
@@ -172,6 +175,7 @@ func (r *Reporter) Run() {
 			errStr = res.err.Error()
 			r.errorDist[errStr]++
 		}
+		response_bytes_b64 := base64.StdEncoding.EncodeToString(res.response)
 
 		if len(r.details) < maxResult {
 			r.details = append(r.details, ResultDetail{
@@ -179,6 +183,8 @@ func (r *Reporter) Run() {
 				Timestamp: res.timestamp,
 				Status:    res.status,
 				Error:     errStr,
+				Worker:    res.workerId,
+				Response:  response_bytes_b64,
 			})
 		}
 	}
