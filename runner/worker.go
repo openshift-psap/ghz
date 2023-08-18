@@ -198,7 +198,7 @@ func (w *Worker) makeClientStreamingRequest(ctx *context.Context,
 	if w.config.enableCompression {
 		callOptions = append(callOptions, grpc.UseCompressor(gzip.Name))
 	}
-	str, err := w.stub.InvokeRpcClientStream(*ctx, w.mtd, callOptions...)
+	str, err := w.stub.InvokeRpcClientStream(context.WithValue(*ctx, "ghzWorker", w.workerID), w.mtd, callOptions...)
 	if err != nil {
 		if w.config.hasLog {
 			w.config.log.Errorw("Invoke Client Streaming RPC call error: "+err.Error(), "workerID", w.workerID,
@@ -324,7 +324,7 @@ func (w *Worker) makeServerStreamingRequest(ctx *context.Context, input *dynamic
 	callCtx, callCancel := context.WithCancel(*ctx)
 	defer callCancel()
 
-	str, err := w.stub.InvokeRpcServerStream(callCtx, w.mtd, input, callOptions...)
+	str, err := w.stub.InvokeRpcServerStream(context.WithValue(callCtx, "ghzWorker", w.workerID), w.mtd, input, callOptions...)
 
 	if err != nil {
 		if w.config.hasLog {
@@ -423,7 +423,7 @@ func (w *Worker) makeBidiRequest(ctx *context.Context,
 	if w.config.enableCompression {
 		callOptions = append(callOptions, grpc.UseCompressor(gzip.Name))
 	}
-	str, err := w.stub.InvokeRpcBidiStream(*ctx, w.mtd, callOptions...)
+	str, err := w.stub.InvokeRpcBidiStream(context.WithValue(*ctx, "ghzWorker", w.workerID), w.mtd, callOptions...)
 
 	if err != nil {
 		if w.config.hasLog {
