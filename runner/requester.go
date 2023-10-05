@@ -177,7 +177,7 @@ func (b *Requester) Run() (*Report, error) {
 	b.lock.Unlock()
 
 	go func() {
-		b.reporter.Run()
+		b.reporter.Run(b.mtd)
 	}()
 
 	wt := createWorkerTicker(b.config)

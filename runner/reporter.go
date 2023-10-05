@@ -1,10 +1,12 @@
 package runner
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"sort"
 	"time"
+
+	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
 )
 
 // Reporter gathers all the results
@@ -157,7 +159,7 @@ func newReporter(results chan *callResult, c *RunConfig) *Reporter {
 }
 
 // Run runs the reporter
-func (r *Reporter) Run() {
+func (r *Reporter) Run(mtd *desc.MethodDescriptor) {
 	var skipCount int
 
 	for res := range r.results {
@@ -175,7 +177,12 @@ func (r *Reporter) Run() {
 			errStr = res.err.Error()
 			r.errorDist[errStr]++
 		}
-		response_bytes_b64 := base64.StdEncoding.EncodeToString(res.response)
+
+		md := mtd.GetOutputType()
+
+		payloadMessage := dynamic.NewMessage(md)
+		_ = payloadMessage.Unmarshal(res.response)
+		jsonbytes, _ := payloadMessage.MarshalJSON()
 
 		if len(r.details) < maxResult {
 			r.details = append(r.details, ResultDetail{
@@ -184,7 +191,7 @@ func (r *Reporter) Run() {
 				Status:    res.status,
 				Error:     errStr,
 				Worker:    res.workerId,
-				Response:  response_bytes_b64,
+				Response:  string(jsonbytes),
 			})
 		}
 	}
